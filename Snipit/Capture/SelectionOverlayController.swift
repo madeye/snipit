@@ -1,5 +1,10 @@
 import AppKit
 
+// Borderless NSWindow refuses to become key by default — override so keyboard events reach the view.
+private final class KeyableWindow: NSWindow {
+    override var canBecomeKey: Bool { true }
+}
+
 /// Manages the full-screen overlay window for region selection.
 /// Completion receives the cropped CGImage + selection rect, or nil if cancelled.
 final class SelectionOverlayController {
@@ -18,7 +23,7 @@ final class SelectionOverlayController {
             return
         }
 
-        let win = NSWindow(
+        let win = KeyableWindow(
             contentRect: screen.frame,
             styleMask: .borderless,
             backing: .buffered,
