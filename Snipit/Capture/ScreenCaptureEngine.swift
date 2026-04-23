@@ -13,6 +13,20 @@ enum CaptureError: LocalizedError {
     }
 }
 
+private extension CGImage {
+    /// Re-draws into an explicit sRGB context, normalising any wide-gamut colour space.
+    func toSRGB() -> CGImage? {
+        guard let cs = CGColorSpace(name: CGColorSpace.sRGB) else { return nil }
+        let bmi = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue
+                                       | CGBitmapInfo.byteOrder32Little.rawValue)
+        guard let ctx = CGContext(data: nil, width: width, height: height,
+                                  bitsPerComponent: 8, bytesPerRow: 0,
+                                  space: cs, bitmapInfo: bmi.rawValue) else { return nil }
+        ctx.draw(self, in: CGRect(x: 0, y: 0, width: width, height: height))
+        return ctx.makeImage()
+    }
+}
+
 enum ScreenCaptureEngine {
     /// Captures the main display and returns a full-resolution CGImage (Retina-aware).
     static func captureMainDisplay() async throws -> CGImage {
@@ -41,7 +55,11 @@ enum ScreenCaptureEngine {
         config.height = Int(CGFloat(display.height) * scale)
         config.scalesToFit = false
         config.showsCursor = false
+        // Force sRGB so colors match regardless of display color profile (P3, etc.)
+        config.colorSpaceName = CGColorSpace.sRGB
 
-        return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+        let raw = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+        // Convert to sRGB CGImage so NSImage always renders with correct colors
+        return raw.toSRGB() ?? raw
     }
 }
