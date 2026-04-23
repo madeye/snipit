@@ -7,21 +7,22 @@ final class AnnotationWindowController: NSWindowController, AnnotationCanvasDele
     private var toolbar: AnnotationToolbar!
 
     init(image: CGImage) {
+        let c = AnnotationCanvas(image: image)
         let win = NSWindow(
-            contentRect: .zero,
-            styleMask: [.borderless, .resizable],
+            contentRect: NSRect(origin: .zero, size: c.bounds.size),
+            styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false
         )
+        win.title = "Snipit"
         win.isOpaque = true
         win.hasShadow = true
         win.level = .floating
+        win.contentView = c
+        win.center()
         super.init(window: win)
 
-        canvas = AnnotationCanvas(image: image)
-        win.contentView = canvas
-        win.setContentSize(canvas.bounds.size)
-        win.center()
+        canvas = c
 
         toolbar = AnnotationToolbar(attachedTo: win)
         toolbar.toolbarDelegate = self
