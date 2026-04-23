@@ -1,8 +1,30 @@
 import AppKit
 
+// MARK: - Tool
+
+enum AnnotationTool {
+    case text, pencil, highlight
+}
+
+// MARK: - Annotation model
+
+enum Annotation {
+    case text(TextAnnotation)
+    case path(PathAnnotation)
+
+    func draw() {
+        switch self {
+        case .text(let t): t.draw()
+        case .path(let p): p.draw()
+        }
+    }
+}
+
+// MARK: - Text
+
 struct TextAnnotation {
     var text: String
-    var origin: CGPoint      // in view points, bottom-left
+    var origin: CGPoint
     var color: NSColor
     var fontSize: CGFloat
 
@@ -14,5 +36,30 @@ struct TextAnnotation {
             .strokeWidth: -2.0,
         ]
         (text as NSString).draw(at: origin, withAttributes: attrs)
+    }
+}
+
+// MARK: - Path (pencil / highlight)
+
+struct PathAnnotation {
+    var path: NSBezierPath
+    var color: NSColor
+    var lineWidth: CGFloat
+    var isHighlight: Bool
+
+    func draw() {
+        NSGraphicsContext.saveGraphicsState()
+        if isHighlight {
+            // Multiply blending makes the highlight darker on light and lighter on dark
+            NSGraphicsContext.current?.compositingOperation = .multiply
+            color.withAlphaComponent(0.45).setStroke()
+        } else {
+            color.setStroke()
+        }
+        path.lineWidth = lineWidth
+        path.lineCapStyle = .round
+        path.lineJoinStyle = .round
+        path.stroke()
+        NSGraphicsContext.restoreGraphicsState()
     }
 }

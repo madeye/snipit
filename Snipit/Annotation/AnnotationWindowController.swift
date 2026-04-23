@@ -1,6 +1,5 @@
 import AppKit
 
-@MainActor
 final class AnnotationWindowController: NSWindowController, AnnotationCanvasDelegate, AnnotationToolbarDelegate {
     var onDone: ((CGImage) -> Void)?
 
@@ -8,13 +7,8 @@ final class AnnotationWindowController: NSWindowController, AnnotationCanvasDele
     private var toolbar: AnnotationToolbar!
 
     init(image: CGImage) {
-        // Scale down for display (Retina: pixel size ÷ 2)
-        let scale = NSScreen.main?.backingScaleFactor ?? 2.0
-        let displaySize = NSSize(width: CGFloat(image.width) / scale,
-                                 height: CGFloat(image.height) / scale)
-
         let win = NSWindow(
-            contentRect: NSRect(origin: .zero, size: displaySize),
+            contentRect: .zero,
             styleMask: [.borderless, .resizable],
             backing: .buffered,
             defer: false
@@ -22,14 +16,12 @@ final class AnnotationWindowController: NSWindowController, AnnotationCanvasDele
         win.isOpaque = true
         win.hasShadow = true
         win.level = .floating
-        win.center()
-
         super.init(window: win)
 
         canvas = AnnotationCanvas(image: image)
-        canvas.frame = NSRect(origin: .zero, size: displaySize)
-        canvas.delegate = self
         win.contentView = canvas
+        win.setContentSize(canvas.bounds.size)
+        win.center()
 
         toolbar = AnnotationToolbar(attachedTo: win)
         toolbar.toolbarDelegate = self
@@ -41,6 +33,7 @@ final class AnnotationWindowController: NSWindowController, AnnotationCanvasDele
     override func showWindow(_ sender: Any?) {
         super.showWindow(sender)
         toolbar.orderFront(nil)
+        window?.makeFirstResponder(canvas)
         NSApp.activate(ignoringOtherApps: true)
     }
 
@@ -62,8 +55,8 @@ final class AnnotationWindowController: NSWindowController, AnnotationCanvasDele
 
     // MARK: AnnotationToolbarDelegate
 
-    func toolbarDidSelectText(_ toolbar: AnnotationToolbar) {
-        canvas.isTextToolActive = toolbar.isTextActive
+    func toolbar(_ toolbar: AnnotationToolbar, didSelectTool tool: AnnotationTool) {
+        canvas.currentTool = tool
     }
 
     func toolbarDidChangeColor(_ toolbar: AnnotationToolbar, color: NSColor) {

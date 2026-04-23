@@ -9,9 +9,10 @@ options:
 
 settings:
   base:
-    SWIFT_VERSION: 5.9
+    SWIFT_VERSION: 5
     MACOSX_DEPLOYMENT_TARGET: "14.0"
     ENABLE_HARDENED_RUNTIME: YES
+    SWIFT_STRICT_CONCURRENCY: minimal
 
 targets:
   Snipit:

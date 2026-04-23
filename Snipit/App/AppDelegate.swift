@@ -1,7 +1,5 @@
 import AppKit
 
-@NSApplicationMain
-@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private let hotKeyManager = HotKeyManager()
@@ -18,10 +16,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: Status Item
 
     private func setupStatusItem() {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "camera.viewfinder", accessibilityDescription: "Snipit")
-            button.image?.isTemplate = true
+            if let img = NSImage(systemSymbolName: "camera.viewfinder", accessibilityDescription: "Snipit") {
+                img.isTemplate = true
+                button.image = img
+            } else {
+                button.title = "✂"
+            }
         }
 
         let menu = NSMenu()

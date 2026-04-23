@@ -17,6 +17,7 @@
 		664E511378F04CAFB6EC9863 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B69A19EA1F7EF7213ACB4032 /* SettingsWindowController.swift */; };
 		675D061485DFEDADCE597268 /* PreferencesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 404F3EA7699D498DCA72DA16 /* PreferencesManager.swift */; };
 		7B7A22F1EAE1C021866A85CE /* OverlayContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3D232D2A1F099F37CE385AD /* OverlayContentView.swift */; };
+		A285AB6C4B7AF5DBF77B5445 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D94261B28CD4A83F85445D3 /* main.swift */; };
 		B5DFF3888896EF87F9081BB0 /* AnnotationWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A9E9EF37F99BE5D744AF24 /* AnnotationWindowController.swift */; };
 		C2552080D7A451EF8F36514C /* ScreenCaptureEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C95C126A7C0D2B75DA609E /* ScreenCaptureEngine.swift */; };
 		C66AA4D65C5F75A50A5905DC /* TextAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6543D171D9AFD972ADD400C /* TextAnnotation.swift */; };
@@ -38,6 +39,7 @@
 		795134D6A2287CC82E3C1F52 /* SelectionOverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionOverlayController.swift; sourceTree = "<group>"; };
 		7F6ABCA4C03F9FF3D912454F /* Snipit.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Snipit.entitlements; sourceTree = "<group>"; };
 		80C95C126A7C0D2B75DA609E /* ScreenCaptureEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureEngine.swift; sourceTree = "<group>"; };
+		8D94261B28CD4A83F85445D3 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		967EC3DD38A18DE68419D441 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A3D232D2A1F099F37CE385AD /* OverlayContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayContentView.swift; sourceTree = "<group>"; };
 		A6543D171D9AFD972ADD400C /* TextAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextAnnotation.swift; sourceTree = "<group>"; };
@@ -82,6 +84,7 @@
 			isa = PBXGroup;
 			children = (
 				5BFF09F4FF53410AF8942E83 /* AppDelegate.swift */,
+				8D94261B28CD4A83F85445D3 /* main.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -246,6 +249,7 @@
 				37DDE730C64D5D7F23AA30CD /* SelectionOverlayController.swift in Sources */,
 				664E511378F04CAFB6EC9863 /* SettingsWindowController.swift in Sources */,
 				C66AA4D65C5F75A50A5905DC /* TextAnnotation.swift in Sources */,
+				A285AB6C4B7AF5DBF77B5445 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,7 +364,8 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.9;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5;
 			};
 			name = Debug;
 		};
@@ -417,7 +422,8 @@
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.9;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5;
 			};
 			name = Release;
 		};

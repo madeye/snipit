@@ -2,7 +2,6 @@ import AppKit
 
 /// Manages the full-screen overlay window for region selection.
 /// Completion receives the cropped CGImage + selection rect, or nil if cancelled.
-@MainActor
 final class SelectionOverlayController {
     private var window: NSWindow?
     private let screenshot: CGImage

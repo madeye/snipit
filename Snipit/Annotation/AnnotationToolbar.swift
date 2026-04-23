@@ -1,8 +1,7 @@
 import AppKit
 
-@MainActor
 protocol AnnotationToolbarDelegate: AnyObject {
-    func toolbarDidSelectText(_ toolbar: AnnotationToolbar)
+    func toolbar(_ toolbar: AnnotationToolbar, didSelectTool tool: AnnotationTool)
     func toolbarDidChangeColor(_ toolbar: AnnotationToolbar, color: NSColor)
     func toolbarDidTapDone(_ toolbar: AnnotationToolbar)
     func toolbarDidTapCancel(_ toolbar: AnnotationToolbar)
@@ -11,60 +10,70 @@ protocol AnnotationToolbarDelegate: AnyObject {
 final class AnnotationToolbar: NSPanel {
     weak var toolbarDelegate: AnnotationToolbarDelegate?
 
-    private let textButton = NSButton()
-    private let colorWell = NSColorWell()
+    private let pencilButton   = AnnotationToolbar.toolButton(title: "✏️", tip: "Pencil")
+    private let highlightButton = AnnotationToolbar.toolButton(title: "🖊", tip: "Highlighter")
+    private let textButton     = AnnotationToolbar.toolButton(title: "T",  tip: "Text")
+    private let colorWell      = NSColorWell()
+    private var toolButtons: [NSButton] = []
 
     convenience init(attachedTo parentWindow: NSWindow) {
-        let height: CGFloat = 44
-        let width: CGFloat = 240
-        let parentFrame = parentWindow.frame
-        let origin = NSPoint(x: parentFrame.midX - width / 2,
-                             y: parentFrame.maxY + 4)
-        self.init(contentRect: NSRect(x: origin.x, y: origin.y, width: width, height: height),
-                  styleMask: [.nonactivatingPanel, .titled, .closable],
-                  backing: .buffered,
-                  defer: false)
+        let height: CGFloat = 48
+        let width: CGFloat = 320
+        let pf = parentWindow.frame
+        self.init(
+            contentRect: NSRect(x: pf.midX - width / 2, y: pf.maxY + 6, width: width, height: height),
+            styleMask: [.nonactivatingPanel, .titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
         title = ""
         isFloatingPanel = true
         becomesKeyOnlyIfNeeded = true
         isMovableByWindowBackground = true
+        toolButtons = [pencilButton, highlightButton, textButton]
         setupContent()
+        selectTool(pencilButton)   // pencil active by default
     }
 
     private func setupContent() {
         let stack = NSStackView()
         stack.orientation = .horizontal
-        stack.spacing = 8
-        stack.edgeInsets = NSEdgeInsets(top: 6, left: 12, bottom: 6, right: 12)
+        stack.spacing = 6
+        stack.edgeInsets = NSEdgeInsets(top: 6, left: 10, bottom: 6, right: 10)
         stack.translatesAutoresizingMaskIntoConstraints = false
 
-        // Text tool button
-        textButton.title = "T"
-        textButton.setButtonType(.toggle)
-        textButton.bezelStyle = .rounded
-        textButton.target = self
-        textButton.action = #selector(textTapped)
-        textButton.font = NSFont.boldSystemFont(ofSize: 14)
-        textButton.widthAnchor.constraint(equalToConstant: 32).isActive = true
+        // Tool buttons
+        for btn in toolButtons {
+            btn.target = self
+            btn.action = #selector(toolTapped(_:))
+            stack.addArrangedSubview(btn)
+        }
+
+        // Separator
+        let sep = NSBox(); sep.boxType = .separator
+        sep.translatesAutoresizingMaskIntoConstraints = false
+        sep.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        stack.addArrangedSubview(sep)
 
         // Color well
         colorWell.color = .systemRed
         colorWell.target = self
         colorWell.action = #selector(colorChanged)
-        colorWell.widthAnchor.constraint(equalToConstant: 32).isActive = true
+        colorWell.widthAnchor.constraint(equalToConstant: 28).isActive = true
+        colorWell.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        stack.addArrangedSubview(colorWell)
 
-        // Done button
+        // Spacer
+        let spacer = NSView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        stack.addArrangedSubview(spacer)
+
+        // Cancel / Done
+        let cancel = NSButton(title: "Cancel", target: self, action: #selector(cancelTapped))
+        cancel.bezelStyle = .rounded
         let done = NSButton(title: "Done", target: self, action: #selector(doneTapped))
         done.bezelStyle = .rounded
         done.keyEquivalent = "\r"
-
-        // Cancel button
-        let cancel = NSButton(title: "Cancel", target: self, action: #selector(cancelTapped))
-        cancel.bezelStyle = .rounded
-
-        stack.addArrangedSubview(textButton)
-        stack.addArrangedSubview(colorWell)
-        stack.addArrangedSubview(NSView()) // spacer
         stack.addArrangedSubview(cancel)
         stack.addArrangedSubview(done)
 
@@ -77,24 +86,36 @@ final class AnnotationToolbar: NSPanel {
         ])
     }
 
-    @objc private func textTapped() {
-        toolbarDelegate?.toolbarDidSelectText(self)
+    private static func toolButton(title: String, tip: String) -> NSButton {
+        let b = NSButton()
+        b.title = title
+        b.toolTip = tip
+        b.setButtonType(.toggle)
+        b.bezelStyle = .rounded
+        b.font = NSFont.systemFont(ofSize: 15)
+        b.widthAnchor.constraint(equalToConstant: 36).isActive = true
+        return b
+    }
+
+    private func selectTool(_ sender: NSButton) {
+        for b in toolButtons { b.state = (b === sender) ? .on : .off }
+    }
+
+    @objc private func toolTapped(_ sender: NSButton) {
+        selectTool(sender)
+        let tool: AnnotationTool
+        switch sender {
+        case pencilButton:    tool = .pencil
+        case highlightButton: tool = .highlight
+        default:              tool = .text
+        }
+        toolbarDelegate?.toolbar(self, didSelectTool: tool)
     }
 
     @objc private func colorChanged() {
         toolbarDelegate?.toolbarDidChangeColor(self, color: colorWell.color)
     }
 
-    @objc private func doneTapped() {
-        toolbarDelegate?.toolbarDidTapDone(self)
-    }
-
-    @objc private func cancelTapped() {
-        toolbarDelegate?.toolbarDidTapCancel(self)
-    }
-
-    var isTextActive: Bool {
-        get { textButton.state == .on }
-        set { textButton.state = newValue ? .on : .off }
-    }
+    @objc private func doneTapped()   { toolbarDelegate?.toolbarDidTapDone(self) }
+    @objc private func cancelTapped() { toolbarDelegate?.toolbarDidTapCancel(self) }
 }
